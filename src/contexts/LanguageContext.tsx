@@ -20,23 +20,33 @@ const translations: Translations = {
     supportWorkerInfo: 'Support Worker Info',
     settings: 'Settings',
     navigation: 'Navigation',
-    
+
     // Dashboard
     totalRecords: 'Total Records',
     awwWorkers: 'AWW Workers',
     awhWorkers: 'AWH Workers',
     supportWorkers: 'Support Workers',
     recentActivity: 'Recent Activity',
-    
+
     // Settings
     language: 'Language',
     selectLanguage: 'Select Language',
     english: 'English',
     hindi: 'Hindi',
     save: 'Save',
-    
+
     // App Title
-    appTitle: 'Harihar Admin Panel'
+    appTitle: 'Harihar Admin Panel',
+
+    // Support worker 
+    sector: 'Sector',
+    anganwadiCenterName: 'Anganwadi Center Name',
+    dob: 'Date of Birth',
+    contact: 'Contact',
+    accountNumber: 'Account Number',
+    bankCode: 'Bank Code',
+    casteGroup: 'Caste Group',
+    
   },
   hi: {
     // Navigation
@@ -46,23 +56,33 @@ const translations: Translations = {
     supportWorkerInfo: 'सहायिका की जानकारी',
     settings: 'सेटिंग्स',
     navigation: 'नेविगेशन',
-    
+
     // Dashboard
     totalRecords: 'कुल रिकॉर्ड',
     awwWorkers: 'आंगनवाड़ी कार्यकर्ता',
     awhWorkers: 'आंगनवाड़ी सहायिका',
     supportWorkers: 'सहायिका',
     recentActivity: 'हाल की गतिविधि',
-    
+
     // Settings
     language: 'भाषा',
     selectLanguage: 'भाषा चुनें',
     english: 'अंग्रेजी',
     hindi: 'हिंदी',
     save: 'सेव करें',
-    
+
     // App Title
-    appTitle: 'हरिहर एडमिन पैनल'
+    appTitle: 'हरिहर एडमिन पैनल',
+
+    // Support worker
+    sector: 'सेक्टर',
+    center:'सेंटर',
+    nganwadiCenterName: 'आंगनवाड़ी केंद्र का नाम',
+    dob: 'जन्म तिथि',
+    contact: 'संपर्क',
+    accountNumber: 'खाता संख्या',
+    bankCode: 'बैंक कोड',
+    casteGroup: 'जाति समूह',
   }
 };
 
