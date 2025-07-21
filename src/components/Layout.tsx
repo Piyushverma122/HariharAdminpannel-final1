@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = [
     {
       name: t('dashboard'),
-      href: '/',
+      href: '/dashboard', // ✅ FIX: Changed from '/' to '/dashboard'
       icon: LayoutDashboard,
     },
     {

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  UserCheck, 
-  Activity, 
-  TrendingUp, 
-  Calendar, 
-  ArrowUp, 
+import {
+  Users,
+  UserCheck,
+  Activity,
+  TrendingUp,
+  Calendar,
+  ArrowUp,
   ArrowDown
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -99,7 +99,9 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    // ✅ FIX: Ensure the outermost div of Dashboard is transparent.
+    // This allows the background gradient from Layout to show through.
+    <div className="space-y-8 bg-transparent">
       {/* Header with greeting */}
       <div className="flex justify-between items-start">
         <div>
@@ -132,7 +134,7 @@ const Dashboard: React.FC = () => {
                     <Icon className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <p className="stat-number text-white">{stat.value}</p>
                   <div className="flex items-center space-x-1">
@@ -154,6 +156,8 @@ const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Activities */}
         <div className="lg:col-span-2">
+          {/* Assuming modern-card has a background, it will still show. */}
+          {/* If you want this to be transparent, you'd need to adjust modern-card's CSS */}
           <div className="modern-card p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-gray-900">{t('recentActivity')}</h2>
@@ -161,11 +165,11 @@ const Dashboard: React.FC = () => {
                 View All
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {recentActivities.map((activity, index) => (
-                <div 
-                  key={activity.id} 
+                <div
+                  key={activity.id}
                   className="flex items-start space-x-4 p-4 hover:bg-gray-50 rounded-xl transition-colors animate-fadeInUp"
                   style={{ animationDelay: `${(index + 4) * 100}ms` }}
                 >
@@ -185,6 +189,8 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Data Structure Overview */}
+      {/* ✅ IMPORTANT: If DataViewer has its own background, it will still cover the gradient. */}
+      {/* You would need to modify DataViewer.tsx to ensure its root element is transparent. */}
       <DataViewer />
       </div>
     </div>
