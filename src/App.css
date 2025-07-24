@@ -1,3 +1,41 @@
+/* src/App.css */
+
+/* --- CORE TAILWIND CSS DIRECTIVES (MUST BE AT THE TOP) --- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- CUSTOM KEYFRAME ANIMATIONS (needed for modal transitions) --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* --- APPLY ANIMATIONS AS CLASSES --- */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* For the spinning loader icon */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+
+/* --- YOUR ORIGINAL APP.CSS STYLES (KEEP THEM BELOW TAILWIND DIRECTIVES) --- */
 .App {
   text-align: center;
 }
@@ -35,4 +73,36 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Existing custom class example */
+.modern-card {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* --- NEW CUSTOM CSS FOR MODAL POPUP (SIMPLIFIED WIDTH & TITLE) --- */
+.custom-modal-popup {
+    width: 90%; /* Occupy 90% width on small screens to give some margin */
+    max-width: 28rem; /* A fixed maximum width (448px) for desktop, typically looks good */
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box; /* Ensures padding/border are included in width */
+    min-height: 20rem; /* Give it a minimum height for presence */
+    display: flex; /* Use flex to easily center content vertically */
+    flex-direction: column;
+    justify-content: center; /* Center content vertically if space allows */
+}
+
+/* The overflow-y-auto and max-h-[90vh] in JSX will handle taller content */
+
+
+.custom-modal-title {
+    text-align: center;
+    word-break: break-word; /* Ensures long words break to next line */
+    font-size: 1.75rem; /* A consistent font size (28px) for the title */
+    line-height: 1.25; /* Similar to Tailwind's leading-tight */
 }

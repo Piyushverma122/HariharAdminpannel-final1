@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe, Save } from 'lucide-react';
+import { Globe, Save } from 'lucide-react'; // Removed LogOut icon
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Settings: React.FC = () => {
@@ -9,12 +9,14 @@ const Settings: React.FC = () => {
     setLanguage(newLanguage);
   };
 
+  // Removed handleLogout function
+
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center animate-fadeInUp">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('settings')}</h1>
-        <p className="text-gray-600">Manage your language preferences</p>
+        <p className="text-gray-600">{t('manageLanguagePreferences')}</p>
       </div>
 
       <div className="max-w-lg mx-auto">
@@ -25,11 +27,11 @@ const Settings: React.FC = () => {
               <Globe className="w-6 h-6 text-blue-600" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-900">{t('language')} {t('settings')}</h2>
-              <p className="text-gray-500 text-sm">Choose your preferred language</p>
+              <h2 className="text-xl font-semibold text-gray-900">{t('language')}</h2>
+              <p className="text-gray-500 text-sm">{t('choosePreferredLanguage')}</p>
             </div>
           </div>
-            
+
           <div className="space-y-4">
             <div>
               <label className="block text-base font-medium text-gray-700 mb-4 text-center">
@@ -61,7 +63,7 @@ const Settings: React.FC = () => {
                     </div>
                   </div>
                 </label>
-                
+
                 <label className={`relative cursor-pointer rounded-lg border-2 p-4 transition-colors ${
                   language === 'en' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
                 }`}>
@@ -89,11 +91,11 @@ const Settings: React.FC = () => {
                 </label>
               </div>
             </div>
-            
+
             <div className="pt-4 text-center">
               <button className="btn-primary px-6 py-2">
                 <Save className="w-4 h-4 mr-2" />
-                <span>{t('save')} Changes</span>
+                <span>{t('saveChanges')}</span>
               </button>
             </div>
           </div>

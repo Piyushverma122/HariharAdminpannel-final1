@@ -1,13 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Database, 
-  UserCheck, 
+import {
+  LayoutDashboard,
+  UserCheck, // Used for Student Stats
   Settings,
   Menu,
   X,
-  Bell
+  Bell,
+  School, // Used for School Stats
+  Users, // Used for Teachers Stats
+  LogOut, // NEW: Import LogOut icon
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -22,18 +24,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigation = [
     {
       name: t('dashboard'),
-      href: '/dashboard', // ✅ FIX: Changed from '/' to '/dashboard'
+      href: '/dashboard',
       icon: LayoutDashboard,
     },
     {
-      name: t('awwAwhData'),
-      href: '/aww-awh-data',
-      icon: Database,
+      // Teachers Stats (formerly AWW & AWH Data)
+      name: t('teachersStats'),
+      href: '/aww-awh-data', // This route is expected to show Teachers Stats content
+      icon: Users,
     },
     {
-      name: t('supportWorkerInfo'),
-      href: '/support-workers',
+      // Student Stats (formerly Support Worker Info)
+      name: t('studentStats'),
+      href: '/support-workers', // This route is expected to show Student Stats content
       icon: UserCheck,
+    },
+    {
+      // School Stats
+      name: t('schoolStats'),
+      href: '/school-stats', // This route is expected to show School Stats content
+      icon: School,
     },
     {
       name: t('settings'),
@@ -42,11 +52,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     },
   ];
 
+  // NEW: handleLogout function
+  const handleLogout = () => {
+    // Clear any stored user data or session tokens from localStorage
+    localStorage.clear(); // Clears all localStorage items
+    // Reload the application to reset state (e.g., return to login)
+    window.location.reload();
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
@@ -55,6 +73,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 w-64 sidebar transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        bg-green-800
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center justify-between h-20 px-6">
@@ -76,33 +95,49 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
         </div>
 
-        <nav className="mt-6 px-4">
-          {/* Navigation Header */}
-          <div className="px-2 mb-4">
-            <h3 className="text-white text-opacity-60 text-xs font-semibold uppercase tracking-wider">
-              {t('navigation')}
-            </h3>
+        <nav className="mt-6 px-4 flex flex-col justify-between h-[calc(100vh-10rem)]"> {/* Added flex-col and height */}
+          <div>
+            {/* Navigation Header */}
+            <div className="px-2 mb-4">
+              <h3 className="text-white text-opacity-60 text-xs font-semibold uppercase tracking-wider">
+                {t('navigation')}
+              </h3>
+            </div>
+
+            <div className="space-y-2">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.href}
+                    className={({ isActive }) =>
+                      `sidebar-item flex items-center px-4 py-2 rounded-lg transition-colors duration-200
+                      ${isActive
+                        ? 'bg-white bg-opacity-20 text-green-900'
+                        : 'text-white text-opacity-90 hover:bg-white hover:bg-opacity-10'
+                      }`
+                    }
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    <Icon className="w-5 h-5 mr-3" />
+                    <span className="font-medium">{item.name}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
-          
-          <div className="space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    `sidebar-item flex items-center text-white text-opacity-90 ${
-                      isActive ? 'active' : ''
-                    }`
-                  }
-                  onClick={() => setIsSidebarOpen(false)}
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  <span className="font-medium">{item.name}</span>
-                </NavLink>
-              );
-            })}
+
+          {/* NEW: Logout Button at the bottom of the sidebar */}
+          <div className="mt-auto pt-4 border-t border-green-700 mx-4"> {/* Added margin top auto and border */}
+            <button
+              onClick={handleLogout}
+              className="sidebar-item flex items-center px-4 py-2 rounded-lg transition-colors duration-200 w-full
+                text-red-300 hover:bg-red-700 hover:text-white"
+            >
+              <LogOut className="w-5 h-5 mr-3" />
+              <span className="font-medium">{t('logout')}</span>
+            </button>
           </div>
         </nav>
       </div>
@@ -120,7 +155,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Menu className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="flex items-center">
               {/* Notification Bell - Clean Style */}
               <div className="relative">

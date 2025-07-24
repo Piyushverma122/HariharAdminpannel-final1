@@ -11,10 +11,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import AwwAwhData from './pages/AwwAwhData';
-import SupportWorkers from './pages/SupportWorkers';
+import AwwAwhData from './pages/AwwAwhData'; // This component is now expected to handle Teachers Stats content
+import SupportWorkers from './pages/SupportWorkers'; // This component is now expected to handle Student Stats content
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import SchoolStats from './pages/SchoolStats'; // NEW: Import the SchoolStats component
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -22,8 +23,6 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   console.log("PrivateRoute: Rendering. isLoggedIn:", isLoggedIn);
 
   // If isLoggedIn is false, redirect to the login page (root path)
-  // The 'loading' state is handled directly within AuthProvider now,
-  // so `isLoggedIn` will only be `true` or `false` here.
   return isLoggedIn ? <>{children}</> : <Navigate to="/" replace />;
 };
 
@@ -48,7 +47,7 @@ function App() {
               }
             />
             <Route
-              path="/aww-awh-data"
+              path="/aww-awh-data" // This route's content should now be Teachers Stats
               element={
                 <PrivateRoute>
                   <Layout>
@@ -58,11 +57,21 @@ function App() {
               }
             />
             <Route
-              path="/support-workers"
+              path="/support-workers" // This route's content should now be Student Stats
               element={
                 <PrivateRoute>
                   <Layout>
                     <SupportWorkers />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/school-stats" // NEW: Route for the School Stats page
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <SchoolStats />
                   </Layout>
                 </PrivateRoute>
               }
@@ -78,14 +87,9 @@ function App() {
               }
             />
 
-            {/* ✅ TEMPORARY DEBUGGING CHANGE: Render a message instead of redirecting */}
-            {/* This will help us see if an unexpected path is being hit */}
-            <Route path="*" element={
-              <div style={{ padding: '20px', textAlign: 'center', fontSize: '24px', color: 'red' }}>
-                404 - Page Not Found (Debug Mode)
-                <p style={{ fontSize: '16px', color: 'gray' }}>Check your URL and routing configuration.</p>
-              </div>
-            } />
+            {/* Fallback Route: If no other route matches, redirect to dashboard (or login if not authenticated) */}
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
           </Routes>
         </Router>
       </AuthProvider>

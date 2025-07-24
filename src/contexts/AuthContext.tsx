@@ -1,64 +1,49 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  login: (token: string) => void;
+  token: string | null;
+  role: string | null;
+  login: (token: string, role: string) => void;
   logout: () => void;
-  authToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authToken, setAuthToken] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true); // Crucial for initial state
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
 
-  // Effect to load auth token from localStorage on initial mount
   useEffect(() => {
-    console.log("AuthContext: useEffect [initial load] - Checking localStorage...");
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('token');
+    const storedRole = localStorage.getItem('role');
 
-    if (storedToken) {
-      setAuthToken(storedToken);
+    if (storedToken && storedRole) {
+      setToken(storedToken);
+      setRole(storedRole);
       setIsLoggedIn(true);
-      console.log("AuthContext: useEffect [initial load] - Found token. isLoggedIn: true");
-    } else {
-      setIsLoggedIn(false);
-      console.log("AuthContext: useEffect [initial load] - No token found. isLoggedIn: false");
     }
-    setLoading(false); // Authentication state has been determined
-    console.log("AuthContext: useEffect [initial load] - Loading complete. loading: false");
-  }, []); // Runs only once on mount
-
-  // Login function - receives the token from your login API call (or dummy token)
-  const login = useCallback((token: string) => {
-    console.log("AuthContext: login() called.");
-    localStorage.setItem('authToken', token); // Store the token
-    setAuthToken(token);
-    setIsLoggedIn(true); // Set logged in state
-    console.log("AuthContext: login() - Token set, isLoggedIn: true");
   }, []);
 
-  // Logout function
-  const logout = useCallback(() => {
-    console.log("AuthContext: logout() called.");
-    localStorage.removeItem('authToken'); // Remove the token
-    setAuthToken(null);
-    setIsLoggedIn(false); // Set logged out state
-    console.log("AuthContext: logout() - Token removed, isLoggedIn: false");
-  }, []);
+  const login = (newToken: string, newRole: string) => {
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('role', newRole);
+    setToken(newToken);
+    setRole(newRole);
+    setIsLoggedIn(true);
+  };
 
-  // Render "Loading..." until the authentication state is determined
-  if (loading) {
-    console.log("AuthContext: Rendering 'Loading...' because loading is true.");
-    return <div>Loading authentication...</div>;
-  }
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    setToken(null);
+    setRole(null);
+    setIsLoggedIn(false);
+  };
 
-  // Render children once loading is complete
-  console.log("AuthContext: Rendering children. isLoggedIn:", isLoggedIn, "authToken:", authToken);
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, authToken }}>
+    <AuthContext.Provider value={{ isLoggedIn, token, role, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -71,4 +56,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-    

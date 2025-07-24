@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { BASE_URL } from '../config/apiConfig';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('admin');
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // useEffect to inject the CSS styles for the login page
   useEffect(() => {
     const style = document.createElement('style');
     style.innerHTML = `
@@ -48,7 +49,8 @@ const Login = () => {
         gap: 15px;
       }
 
-      .login-form input {
+      .login-form input,
+      .login-form select {
         padding: 12px;
         border: 1px solid #ccc;
         border-radius: 8px;
@@ -57,7 +59,8 @@ const Login = () => {
         transition: border 0.3s ease;
       }
 
-      .login-form input:focus {
+      .login-form input:focus,
+      .login-form select:focus {
         border-color: #2e7d32;
       }
 
@@ -93,30 +96,37 @@ const Login = () => {
     };
   }, []);
 
-  const dummyAccount = {
-    username: 'admin',
-    password: 'admin123',
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login.tsx: handleLogin called.");
-    if (username === dummyAccount.username && password === dummyAccount.password) {
-      setError('');
-      console.log("Login.tsx: Credentials match. Calling login() from AuthContext.");
-      login('dummy-jwt-token-for-admin'); // Pass a placeholder string as the token
-      console.log("Login.tsx: Navigating to /dashboard.");
-      navigate('/dashboard');
-    } else {
-      setError('Invalid credentials. Hint: admin / admin123');
-      console.log("Login.tsx: Invalid credentials.");
+    setError('');
+
+    try {
+      const response = await fetch(`${BASE_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password, role })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === true) {
+        login(data.token || 'dummy-token', data.role || role);
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Server error. Please try again later.');
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">Admin Login</h2>
+        <h2 className="login-title">Login</h2>
         <form onSubmit={handleLogin} className="login-form">
           <input
             type="text"
@@ -132,6 +142,10 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <select value={role} onChange={(e) => setRole(e.target.value)} required>
+            <option value="admin">Admin</option>
+            <option value="supervisor">Supervisor</option>
+          </select>
           {error && <p className="error-message">{error}</p>}
           <button type="submit">Login</button>
         </form>
