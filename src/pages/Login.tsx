@@ -271,7 +271,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <img
-          src="/public/logo.png" // Path to your logo image in the public folder
+          src="/logo.png" // Path to your logo image in the public folder
           alt="Hari Har Pathshala Logo"
           className="login-logo"
         />
