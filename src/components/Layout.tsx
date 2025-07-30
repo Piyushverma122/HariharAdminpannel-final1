@@ -1,17 +1,25 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  UserCheck, // Used for Student Stats
+  UserCheck,
   Settings,
   Menu,
   X,
   Bell,
-  School, // Used for School Stats
-  Users, // Used for Teachers Stats
-  LogOut, // NEW: Import LogOut icon
+  School,
+  Users,
+  LogOut,
+  ClipboardList
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<any>;
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -19,38 +27,69 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useLanguage();
+  const { role } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const location = useLocation();
 
-  const navigation = [
+  // Define navigation items for different roles
+  const adminNavigation: NavItem[] = [
     {
       name: t('dashboard'),
       href: '/dashboard',
       icon: LayoutDashboard,
     },
     {
-      // Teachers Stats (formerly AWW & AWH Data)
       name: t('teachersStats'),
-      href: '/aww-awh-data', // This route is expected to show Teachers Stats content
+      href: '/aww-awh-data',
       icon: Users,
     },
     {
-      // Student Stats (formerly Support Worker Info)
       name: t('studentStats'),
-      href: '/support-workers', // This route is expected to show Student Stats content
+      href: '/support-workers',
       icon: UserCheck,
     },
     {
-      // School Stats
       name: t('schoolStats'),
-      href: '/school-stats', // This route is expected to show School Stats content
+      href: '/school-stats',
       icon: School,
     },
     {
       name: t('settings'),
       href: '/settings',
       icon: Settings,
-    },
+    }
   ];
+
+  const supervisorNavigation: NavItem[] = [
+    {
+      name: "Supervisor Dashboard",
+      href: '/supervisor-dashboard',
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Assigned Teachers",
+      href: '/supervisor/teachers',
+      icon: Users,
+    },
+    {
+      name: "Assigned Students",
+      href: '/supervisor/students',
+      icon: UserCheck,
+    },
+    {
+      name: "Assigned Schools",
+      href: '/supervisor/schools',
+      icon: School,
+    },
+    {
+      name: t('settings'),
+      href: '/settings',
+      icon: Settings,
+    }
+  ];
+
+  // Select navigation based on role
+  const navigation = role === 'supervisor' ? supervisorNavigation : adminNavigation;
 
   // NEW: handleLogout function
   const handleLogout = () => {
@@ -84,7 +123,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
             </div>
             <div className="ml-3">
-              <h1 className="text-lg font-semibold text-white">{t('appTitle')}</h1>
+              <h1 className="text-lg font-semibold text-white">
+                {role === 'supervisor' ? 'Harihar Supervisor' : t('appTitle')}
+              </h1>
             </div>
           </div>
           <button
@@ -106,7 +147,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             <div className="space-y-2">
               {navigation.map((item) => {
-                const Icon = item.icon;
+                const IconComponent = item.icon;
                 return (
                   <NavLink
                     key={item.name}
@@ -120,7 +161,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     }
                     onClick={() => setIsSidebarOpen(false)}
                   >
-                    <Icon className="w-5 h-5 mr-3" />
+                    <IconComponent className="w-5 h-5 mr-3" />
                     <span className="font-medium">{item.name}</span>
                   </NavLink>
                 );

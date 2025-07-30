@@ -11,11 +11,13 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import AwwAwhData from './pages/AwwAwhData'; // This component is now expected to handle Teachers Stats content
-import SupportWorkers from './pages/SupportWorkers'; // This component is now expected to handle Student Stats content
+import AwwAwhData from './pages/AwwAwhData';
+import SupportWorkers from './pages/SupportWorkers';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
-import SchoolStats from './pages/SchoolStats'; // NEW: Import the SchoolStats component
+import SchoolStats from './pages/SchoolStats';
+import SupervisorDashboard from './pages/SupervisorDashboard';
+import { AssignedTeachers, AssignedStudents, AssignedSchools } from './pages/supervisor';
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -36,6 +38,49 @@ function App() {
             <Route path="/" element={<Login />} />
 
             {/* Protected Routes - wrapped with PrivateRoute */}
+            {/* Supervisor Routes */}
+            <Route
+              path="/supervisor-dashboard"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <SupervisorDashboard />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/supervisor/teachers"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <AssignedTeachers />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/supervisor/students"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <AssignedStudents />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/supervisor/schools"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <AssignedSchools />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            
+            {/* Admin Routes */}
             <Route
               path="/dashboard"
               element={

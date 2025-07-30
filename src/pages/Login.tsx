@@ -246,16 +246,13 @@ const Login = () => {
       // Check if the login was successful based on the backend's response
       if (response.ok && data.status === true) {
         // Call the login function from AuthContext, passing the token and the role
-        // We use data.role from the backend response, as it's the authoritative source.
-        login(data.token || 'dummy-token', data.role);
+        login(data.token || 'dummy-token', role); // Use the role from form selection
 
-        // Navigate to the appropriate dashboard based on the authenticated role
-        if (data.role === 'admin') {
-          navigate('/admin-dashboard'); // Navigate to the admin dashboard route
-        } else if (data.role === 'supervisor') {
-          navigate('/supervisor-dashboard'); // Navigate to the supervisor dashboard route
-        } else {
-          navigate('/dashboard'); // Fallback to a general dashboard if role is unexpected
+        // Navigate based on the selected role
+        if (role === 'admin') {
+          navigate('/dashboard');
+        } else if (role === 'supervisor') {
+          navigate('/supervisor-dashboard');
         }
       } else {
         // Set error message from backend or a generic one
