@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext'; // Assuming AuthContext provides login function
-import { BASE_URL } from '../config/apiConfig'; // Assuming BASE_URL is defined here
-import { LogIn } from 'lucide-react'; // Import LogIn icon for the button
+import { useAuth } from '../contexts/AuthContext';
+import { ApiService, ApiError } from '../services/apiService';
+import { LogIn } from 'lucide-react';
 
 const Login = () => {
-  // 'username' state will hold either UDISE Code for admin or Username for supervisor
+  // State for admin login (UDISE Code and password)
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('admin'); // Default role is 'admin' (school)
   const [error, setError] = useState('');
   const { login } = useAuth(); // Destructure login function from AuthContext
   const navigate = useNavigate(); // Hook for programmatic navigation
@@ -212,55 +211,35 @@ const Login = () => {
     };
   }, []); // Empty dependency array ensures this runs only once on mount
 
-  // handleLogin function to manage authentication logic
+  // handleLogin function to manage authentication logic for admin only
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission behavior
-    setError(''); // Clear any previous errors
+    e.preventDefault();
+    setError('');
 
-    let apiUrl = '';
-    let requestBody: { udise_code?: string; username?: string; password: string }; // Define type for request body
-
-    // Determine which API endpoint to call and what data to send based on the selected role
-    if (role === 'admin') {
-      apiUrl = `${BASE_URL}/login`;
-      requestBody = { udise_code: username, password }; // Admin login expects udise_code
-    } else if (role === 'supervisor') {
-      apiUrl = `${BASE_URL}/login_supervisor`;
-      requestBody = { username: username, password }; // Supervisor login expects username
-    } else {
-      setError('Invalid role selected.'); // Should not happen with current dropdown options
-      return; // Exit the function if role is invalid
+    // Validate input
+    if (!username.trim() || !password.trim()) {
+      setError('Please enter both Admin ID and password.');
+      return;
     }
 
     try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody) // Send the dynamically constructed request body
+      // Use API service for login
+      const loginData = await ApiService.adminLogin({
+        admin_id: username.trim(),
+        password: password.trim(),
       });
 
-      const data = await response.json(); // Parse the JSON response
-
-      // Check if the login was successful based on the backend's response
-      if (response.ok && data.status === true) {
-        // Call the login function from AuthContext, passing the token and the role
-        login(data.token || 'dummy-token', role); // Use the role from form selection
-
-        // Navigate based on the selected role
-        if (role === 'admin') {
-          navigate('/dashboard');
-        } else if (role === 'supervisor') {
-          navigate('/supervisor-dashboard');
-        }
+      // Login successful
+      login(`admin-${loginData.admin_id}`, 'admin');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      if (error instanceof ApiError) {
+        setError(error.message);
       } else {
-        // Set error message from backend or a generic one
-        setError(data.message || 'Login failed. Please check your credentials.');
+        setError('Server error. Please try again later.');
       }
-    } catch (err) {
-      console.error('Login error:', err); // Log the error to console for debugging
-      setError('Server error. Please try again later.'); // Generic error for network/server issues
     }
   };
 
@@ -272,13 +251,12 @@ const Login = () => {
           alt="Hari Har Pathshala Logo"
           className="login-logo"
         />
-        <h2 className="login-title">Login</h2>
+        <h2 className="login-title">Administration Login</h2>
         <form onSubmit={handleLogin} className="login-form">
           <input
             type="text"
-            id="loginIdentifier" // Changed ID to be more generic for either UDISE or Username
-            // Dynamically change placeholder based on selected role for better UX
-            placeholder={role === 'admin' ? 'UDISE Code' : 'Supervisor Username'}
+            id="loginIdentifier"
+            placeholder="Admin ID"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -291,15 +269,6 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-          >
-            <option value="admin">Admin (School)</option> {/* Clarified role for users */}
-            <option value="supervisor">Supervisor</option>
-          </select>
           {error && <p className="error-message">{error}</p>} {/* Display error message if present */}
           <button type="submit">
             <LogIn className="login-button-icon" /> {/* LogIn icon for visual appeal */}

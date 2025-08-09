@@ -2,15 +2,13 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  UserCheck,
   Settings,
   Menu,
   X,
   Bell,
   School,
-  Users,
   LogOut,
-  ClipboardList
+  Users
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,22 +29,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const location = useLocation();
 
-  // Define navigation items for different roles
-  const adminNavigation: NavItem[] = [
+  // Define navigation items
+  const navigation: NavItem[] = [
     {
       name: t('dashboard'),
       href: '/dashboard',
       icon: LayoutDashboard,
-    },
-    {
-      name: t('teachersStats'),
-      href: '/aww-awh-data',
-      icon: Users,
-    },
-    {
-      name: t('studentStats'),
-      href: '/support-workers',
-      icon: UserCheck,
     },
     {
       name: t('schoolStats'),
@@ -54,42 +42,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: School,
     },
     {
-      name: t('settings'),
-      href: '/settings',
-      icon: Settings,
-    }
-  ];
-
-  const supervisorNavigation: NavItem[] = [
-    {
-      name: "Supervisor Dashboard",
-      href: '/supervisor-dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Assigned Teachers",
-      href: '/supervisor/teachers',
+      name: 'Student Details',
+      href: '/student-details',
       icon: Users,
     },
     {
-      name: "Assigned Students",
-      href: '/supervisor/students',
-      icon: UserCheck,
-    },
-    {
-      name: "Assigned Schools",
-      href: '/supervisor/schools',
-      icon: School,
-    },
-    {
       name: t('settings'),
       href: '/settings',
       icon: Settings,
     }
   ];
-
-  // Select navigation based on role
-  const navigation = role === 'supervisor' ? supervisorNavigation : adminNavigation;
 
   // NEW: handleLogout function
   const handleLogout = () => {
@@ -115,21 +77,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         bg-green-800
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between h-20 px-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
-            </div>
-            <div className="ml-3">
+        <div className="flex items-center justify-center h-20 px-6">
+          <div className="flex items-center justify-center w-full">
+            <div className="text-center">
               <h1 className="text-lg font-semibold text-white">
-                {role === 'supervisor' ? 'Harihar Supervisor' : t('appTitle')}
+                Harihar Admin Panel
               </h1>
             </div>
           </div>
           <button
-            className="lg:hidden text-white hover:text-gray-200"
+            className="lg:hidden text-white hover:text-gray-200 absolute right-6"
             onClick={() => setIsSidebarOpen(false)}
           >
             <X className="h-6 w-6" />
@@ -170,15 +127,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           {/* NEW: Logout Button at the bottom of the sidebar */}
-          <div className="mt-auto pt-4 border-t border-green-700 mx-4"> {/* Added margin top auto and border */}
-            <button
-              onClick={handleLogout}
-              className="sidebar-item flex items-center px-4 py-2 rounded-lg transition-colors duration-200 w-full
-                text-red-300 hover:bg-red-700 hover:text-white"
-            >
-              <LogOut className="w-5 h-5 mr-3" />
-              <span className="font-medium">{t('logout')}</span>
-            </button>
+          <div className="mt-auto">
+            <div className="pt-4 border-t border-green-700 mx-4">
+              <button
+                onClick={handleLogout}
+                className="sidebar-item flex items-center px-4 py-2 rounded-lg transition-colors duration-200 w-full
+                  text-red-300 hover:bg-red-700 hover:text-white"
+              >
+                <LogOut className="w-5 h-5 mr-3" />
+                <span className="font-medium">{t('logout')}</span>
+              </button>
+            </div>
+            
+            {/* Powered by SSIPMT Raipur */}
+            <div className="pt-3 pb-4 px-4">
+              <div className="text-center">
+                <p className="text-white text-opacity-50 text-xs font-medium">
+                  Powered by SSIPMT Raipur
+                </p>
+              </div>
+            </div>
           </div>
         </nav>
       </div>
@@ -197,15 +165,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
             </div>
 
-            <div className="flex items-center">
-              {/* Notification Bell - Clean Style */}
-              <div className="relative">
-                <button className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
-                  <Bell className="w-6 h-6" />
-                  <span className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-                </button>
-              </div>
-            </div>
+            {/* Empty div to maintain spacing */}
+            <div></div>
           </div>
         </header>
 

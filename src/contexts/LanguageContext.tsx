@@ -14,10 +14,9 @@ const translations: Translations = {
     appTitle: 'Harihar Admin Panel',
     navigation: 'Navigation',
     dashboard: 'Dashboard',
-    teachersStats: 'Teachers Stats',
-    studentStats: 'Student Stats',
     schoolStats: 'School Stats',
     settings: 'Settings',
+    logout: 'Logout',
 
     // --- Dashboard Page Specific ---
     totalRecords: 'Total Records',
@@ -97,10 +96,9 @@ const translations: Translations = {
     appTitle: 'हरिहर एडमिन पैनल',
     navigation: 'नेविगेशन',
     dashboard: 'डैशबोर्ड',
-    teachersStats: 'शिक्षक आँकड़े',
-    studentStats: 'छात्र आँकड़े',
     schoolStats: 'स्कूल आँकड़े',
     settings: 'सेटिंग्स',
+    logout: 'लॉग आउट',
 
     // --- Dashboard Page Specific ---
     totalRecords: 'कुल रिकॉर्ड',

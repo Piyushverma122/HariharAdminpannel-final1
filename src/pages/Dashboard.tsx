@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users,       // Icon for Teachers Stats
-  UserCheck,   // Icon for Student Stats
-  Activity,    // Icon for School Stats card
-  TrendingUp,  // Icon for Total Records
+  Users,
+  Camera,
+  School,
+  Activity,
+  CheckCircle,
+  Clock,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { TEMP_BASE_URL } from '../config/apiConfig';
+import { ApiService, ApiError } from '../services/apiService';
 
 // Import Recharts components
 import {
@@ -26,118 +28,99 @@ const Dashboard: React.FC = () => {
   const { t } = useLanguage();
 
   const [statsData, setStatsData] = useState({
-    total_teachers: 0,
-    total_students: 0,
-    total_schools: 0,
-    total_records: 0,
+    totalStudents: 0,
+    totalSchools: 0,
+    verifiedStudents: 0,
+    pendingStudents: 0,
   });
-  // --- FIX: Added setError state ---
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // --- END FIX ---
-
-  // --- IMPORTANT: TOGGLE THIS FOR DEBUGGING DATA ISSUES ---
-  const USE_MOCK_DATA = false; // Set to true to use mock data for debugging
-  const mockStatsData = {
-    total_teachers: 150,
-    total_students: 300,
-    total_schools: 25,
-    total_records: 475, // Sum of above
-  };
-  // --- END MOCK DATA CONFIG ---
 
 
   useEffect(() => {
-    if (USE_MOCK_DATA) {
-      setStatsData(mockStatsData);
-      console.log("Dashboard - Using Mock Data:", mockStatsData);
-      setError(null); // Clear any previous errors when using mock data
-    } else {
-      fetch(`${TEMP_BASE_URL}/web_dashboard`)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`HTTP error! Status: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data.status) {
-            const teachers = data.total_teachers || 0;
-            const students = data.total_students || 0;
-            const schools = data.total_schools || 0;
-            const total = teachers + students + schools;
-
-            setStatsData({
-              total_teachers: teachers,
-              total_students: students,
-              total_schools: schools,
-              total_records: total,
-            });
-            setError(null); // Clear error on successful fetch
-            console.log("Dashboard - API Data Fetched Successfully:", data);
-          } else {
-            console.error("Dashboard - API returned an error status:", data.message);
-            setError("API Error: " + data.message);
-            setStatsData({ total_teachers: 0, total_students: 0, total_schools: 0, total_records: 0 });
-          }
-        })
-        .catch((error) => {
-          console.error("Dashboard - Failed to fetch dashboard data:", error);
-          setError("Failed to load dashboard data. Please check your network.");
-          setStatsData({ total_teachers: 0, total_students: 0, total_schools: 0, total_records: 0 });
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const stats = await ApiService.getDashboardStats();
+        setStatsData(stats);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        
+        if (err instanceof ApiError) {
+          setError(err.message);
+        } else {
+          setError('Failed to load dashboard data. Please check your network.');
+        }
+        
+        // Set default values on error
+        setStatsData({
+          totalStudents: 0,
+          totalSchools: 0,
+          verifiedStudents: 0,
+          pendingStudents: 0,
         });
-    }
-  }, [USE_MOCK_DATA, mockStatsData]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
 
   const stats = [
     {
-      name: t('teachersStats'),
-      value: statsData.total_teachers.toString(),
+      name: 'Total Students',
+      value: statsData.totalStudents.toString(),
       icon: Users,
       gradient: 'gradient-card-blue',
-      link: '/aww-awh-data',
+      link: '/student-details',
     },
     {
-      name: t('studentStats'),
-      value: statsData.total_students.toString(),
-      icon: UserCheck,
+      name: 'Verified Students',
+      value: statsData.verifiedStudents.toString(),
+      icon: CheckCircle,
       gradient: 'gradient-card-green',
-      link: '/support-workers',
+      link: '/student-details',
     },
     {
-      name: t('schoolStats'),
-      value: statsData.total_schools.toString(),
-      icon: Activity,
+      name: 'Pending Verification',
+      value: statsData.pendingStudents.toString(),
+      icon: Clock,
+      gradient: 'gradient-card-orange',
+      link: '/student-details',
+    },
+    {
+      name: 'Total Schools',
+      value: statsData.totalSchools.toString(),
+      icon: School,
       gradient: 'gradient-card-purple',
       link: '/school-stats',
     },
-    {
-      name: 'कुल रिकॉर्ड', // Total Records
-      value: statsData.total_records.toString(),
-      icon: TrendingUp,
-      gradient: 'gradient-card-orange',
-      link: '/aww-awh-data',
-    },
   ];
 
-  // --- REVERTED: Original chartData structure for single Bar with Cells ---
   const chartData = [
     {
-      name: t('teachersStats'),
-      count: statsData.total_teachers,
+      name: 'Total Students',
+      count: statsData.totalStudents,
       color: '#3b82f6' // Blue
     },
     {
-      name: t('studentStats'),
-      count: statsData.total_students,
+      name: 'Verified',
+      count: statsData.verifiedStudents,
       color: '#22c55e' // Green
     },
     {
-      name: t('schoolStats'),
-      count: statsData.total_schools,
+      name: 'Pending',
+      count: statsData.pendingStudents,
+      color: '#f59e0b' // Orange
+    },
+    {
+      name: 'Schools',
+      count: statsData.totalSchools,
       color: '#a855f7' // Purple
     },
   ];
-  // --- END REVERTED CHART DATA ---
 
   console.log("Dashboard - Chart Data for Bars (rendered):", chartData);
 
@@ -149,15 +132,20 @@ const Dashboard: React.FC = () => {
         </h1>
       </div>
 
-      {error && (
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard data...</p>
+        </div>
+      ) : error ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error:</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -229,6 +217,8 @@ const Dashboard: React.FC = () => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+        </>
+      )}
     </div>
   );
 };

@@ -11,13 +11,10 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import AwwAwhData from './pages/AwwAwhData';
-import SupportWorkers from './pages/SupportWorkers';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import SchoolStats from './pages/SchoolStats';
-import SupervisorDashboard from './pages/SupervisorDashboard';
-import { AssignedTeachers, AssignedStudents, AssignedSchools } from './pages/supervisor';
+import StudentDetails from './pages/StudentDetails';
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -38,48 +35,6 @@ function App() {
             <Route path="/" element={<Login />} />
 
             {/* Protected Routes - wrapped with PrivateRoute */}
-            {/* Supervisor Routes */}
-            <Route
-              path="/supervisor-dashboard"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <SupervisorDashboard />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/supervisor/teachers"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <AssignedTeachers />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/supervisor/students"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <AssignedStudents />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/supervisor/schools"
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <AssignedSchools />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            
             {/* Admin Routes */}
             <Route
               path="/dashboard"
@@ -92,31 +47,21 @@ function App() {
               }
             />
             <Route
-              path="/aww-awh-data" // This route's content should now be Teachers Stats
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <AwwAwhData />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/support-workers" // This route's content should now be Student Stats
-              element={
-                <PrivateRoute>
-                  <Layout>
-                    <SupportWorkers />
-                  </Layout>
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/school-stats" // NEW: Route for the School Stats page
+              path="/school-stats"
               element={
                 <PrivateRoute>
                   <Layout>
                     <SchoolStats />
+                  </Layout>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/student-details"
+              element={
+                <PrivateRoute>
+                  <Layout>
+                    <StudentDetails />
                   </Layout>
                 </PrivateRoute>
               }
