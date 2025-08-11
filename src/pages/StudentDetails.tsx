@@ -13,13 +13,10 @@ import {
   Award,
   TreePine,
   IdCard,
-  CheckCircle,
   XCircle,
   Users,
   Filter,
-  ChevronDown,
-  UserCheck,
-  UserX
+  ChevronDown
 } from 'lucide-react';
 
 interface Student {
@@ -32,7 +29,6 @@ interface Student {
   certificate: string;
   date_time: string;
   udise_code: string;
-  verified: string;
 }
 
 const StudentDetails: React.FC = () => {
@@ -79,71 +75,16 @@ const StudentDetails: React.FC = () => {
     });
   };
 
-  // Verification functionality
-  const handleVerificationToggle = async (studentIndex: number, currentStatus: string) => {
-    const student = filteredStudents[studentIndex];
-    const newStatus = currentStatus === 'true' ? 'false' : 'true';
-    
-    try {
-      setLoading(true);
-      setError(null); // Clear any previous errors
-      
-      console.log('Attempting to update verification for student:', student.name, 'with employee_id:', student.employee_id, 'to status:', newStatus);
-      
-      // Call API to update verification status with fallback information
-      await ApiService.updateStudentVerification(
-        student.employee_id, 
-        newStatus, 
-        student.name, 
-        student.udise_code
-      );
-      
-      console.log('API call successful, updating local state');
-      
-      // Update local state
-      const updatedStudents = students.map(s => 
-        (s.employee_id && s.employee_id === student.employee_id) ||
-        (s.name === student.name && s.udise_code === student.udise_code)
-          ? { ...s, verified: newStatus }
-          : s
-      );
-      setStudents(updatedStudents);
-      
-      // Update selected student if it's the same one
-      if (selectedStudent && (
-        (selectedStudent.employee_id && selectedStudent.employee_id === student.employee_id) ||
-        (selectedStudent.name === student.name && selectedStudent.udise_code === student.udise_code)
-      )) {
-        setSelectedStudent({ ...selectedStudent, verified: newStatus });
-      }
-      
-      console.log('Local state updated successfully');
-      
-    } catch (err) {
-      console.error('Failed to update verification status:', err);
-      
-      // More detailed error handling
-      if (err instanceof ApiError) {
-        setError(`API Error: ${err.message} (Status: ${err.status})`);
-        console.error('API Error details:', err.response);
-      } else if (err instanceof Error) {
-        setError(`Error: ${err.message}`);
-      } else {
-        setError('Failed to update verification status. Please check the console for details.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleSearch = async () => {
     if (!udiseCode.trim()) {
-      setError('Please enter a UDISE code');
+      setError(t('pleaseEnterUdiseCode'));
       return;
     }
 
     if (!ApiService.validateUdiseCode(udiseCode.trim())) {
-      setError('Please enter a valid UDISE code');
+      setError(t('pleaseEnterValidUdiseCode'));
       return;
     }
 
@@ -162,7 +103,7 @@ const StudentDetails: React.FC = () => {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError('Failed to fetch student data. Please check your connection and try again.');
+        setError(t('failedToFetchStudentData'));
       }
     } finally {
       setLoading(false);
@@ -192,7 +133,7 @@ const StudentDetails: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return t('notAvailable') || 'N/A';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-IN', {
@@ -211,7 +152,7 @@ const StudentDetails: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Main Heading */}
       <h2 className="text-3xl font-bold text-left text-green-700">
-        Student Details
+        {t('studentDetailsTitle')}
       </h2>
 
       {/* Search Section */}
@@ -223,7 +164,7 @@ const StudentDetails: React.FC = () => {
               value={udiseCode}
               onChange={(e) => setUdiseCode(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Enter UDISE code to search for students..."
+              placeholder={t('enterUdiseCodePlaceholder')}
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-lg"
             />
           </div>
@@ -233,7 +174,7 @@ const StudentDetails: React.FC = () => {
             className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Search className="w-5 h-5" />
-            {loading ? 'Searching...' : 'Search Students'}
+            {loading ? t('searching') : t('searchStudents')}
           </button>
         </div>
       </div>
@@ -242,13 +183,13 @@ const StudentDetails: React.FC = () => {
       {searched && students.length > 0 && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 items-center">
-            <h3 className="text-lg font-semibold text-gray-800">Filter Results:</h3>
+            <h3 className="text-lg font-semibold text-gray-800">{t('filterResults')}</h3>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Filter className="w-4 h-4" />
-              Filters
+              {t('filters')}
               <ChevronDown className={`w-3 h-3 transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
             </button>
           </div>
@@ -257,49 +198,49 @@ const StudentDetails: React.FC = () => {
           {showFilters && (
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="text-md font-semibold text-gray-800">Filter Options</h4>
+                <h4 className="text-md font-semibold text-gray-800">{t('filterOptions')}</h4>
                 <button
                   onClick={clearAllFilters}
                   className="text-sm text-red-600 hover:text-red-800 underline"
                 >
-                  Clear All Filters
+                  {t('clearAllFilters')}
                 </button>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* UDISE Code Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">UDISE Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('udiseCodeFilter')}</label>
                   <input
                     type="text"
                     value={filters.udiseCode}
                     onChange={(e) => handleFilterChange('udiseCode', e.target.value)}
-                    placeholder="Filter by UDISE code..."
+                    placeholder={t('filterByUdiseCodePlaceholder')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 {/* Class Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Class</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('classFilter')}</label>
                   <select
                     value={filters.class}
                     onChange={(e) => handleFilterChange('class', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="">All Classes</option>
-                    <option value="1">Class 1</option>
-                    <option value="2">Class 2</option>
-                    <option value="3">Class 3</option>
-                    <option value="4">Class 4</option>
-                    <option value="5">Class 5</option>
-                    <option value="6">Class 6</option>
-                    <option value="7">Class 7</option>
-                    <option value="8">Class 8</option>
-                    <option value="9">Class 9</option>
-                    <option value="10">Class 10</option>
-                    <option value="11">Class 11</option>
-                    <option value="12">Class 12</option>
+                    <option value="">{t('allClasses')}</option>
+                    <option value="1">{t('class1')}</option>
+                    <option value="2">{t('class2')}</option>
+                    <option value="3">{t('class3')}</option>
+                    <option value="4">{t('class4')}</option>
+                    <option value="5">{t('class5')}</option>
+                    <option value="6">{t('class6')}</option>
+                    <option value="7">{t('class7')}</option>
+                    <option value="8">{t('class8')}</option>
+                    <option value="9">{t('class9')}</option>
+                    <option value="10">{t('class10')}</option>
+                    <option value="11">{t('class11')}</option>
+                    <option value="12">{t('class12')}</option>
                   </select>
                 </div>
               </div>
@@ -307,11 +248,11 @@ const StudentDetails: React.FC = () => {
               {/* Active Filters Display */}
               {(filters.udiseCode || filters.class) && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Active Filters:</p>
+                  <p className="text-sm font-medium text-gray-700 mb-2">{t('activeFilters')}</p>
                   <div className="flex flex-wrap gap-2">
                     {filters.udiseCode && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        UDISE: {filters.udiseCode}
+                        {t('udise')}: {filters.udiseCode}
                         <button onClick={() => handleFilterChange('udiseCode', '')} className="ml-2 text-blue-600 hover:text-blue-800">
                           <X className="w-3 h-3" />
                         </button>
@@ -319,7 +260,7 @@ const StudentDetails: React.FC = () => {
                     )}
                     {filters.class && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Class: {filters.class}
+                        {t('class')}: {filters.class}
                         <button onClick={() => handleFilterChange('class', '')} className="ml-2 text-blue-600 hover:text-blue-800">
                           <X className="w-3 h-3" />
                         </button>
@@ -337,7 +278,7 @@ const StudentDetails: React.FC = () => {
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <p className="mt-4 text-gray-600">Searching for students...</p>
+          <p className="mt-4 text-gray-600">{t('searchingForStudents')}</p>
         </div>
       ) : error ? (
         <div className="text-center py-12">
@@ -347,25 +288,25 @@ const StudentDetails: React.FC = () => {
       ) : searched && students.length === 0 ? (
         <div className="text-center py-12">
           <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500 text-lg">No students found for UDISE code: {udiseCode}</p>
+          <p className="text-gray-500 text-lg">{t('noStudentsFoundForUdise')} {udiseCode}</p>
         </div>
       ) : searched && students.length > 0 && filteredStudents.length === 0 ? (
         <div className="text-center py-12">
           <Filter className="w-16 h-16 mx-auto text-orange-400 mb-4" />
-          <p className="text-orange-500 text-lg">No students match the current filters</p>
+          <p className="text-orange-500 text-lg">{t('noStudentsMatchFilters')}</p>
           <button
             onClick={clearAllFilters}
             className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
           >
-            Clear Filters
+            {t('clearFilters')}
           </button>
         </div>
       ) : searched && filteredStudents.length > 0 ? (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold text-gray-800">
-              Found {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''} 
-              {filteredStudents.length !== students.length && ` (filtered from ${students.length} total)`} for UDISE: {udiseCode}
+              {t('foundStudents')} {filteredStudents.length} {filteredStudents.length !== 1 ? t('students') : t('student')} 
+              {filteredStudents.length !== students.length && ` (${t('filteredFrom')} ${students.length} ${t('total')})`} {t('forUdise')} {udiseCode}
             </h3>
           </div>
           
@@ -378,31 +319,20 @@ const StudentDetails: React.FC = () => {
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold text-green-700">{student.name}</h4>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    student.verified === 'true' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {student.verified === 'true' ? (
-                      <><CheckCircle className="inline w-3 h-3 mr-1" />Verified</>
-                    ) : (
-                      <><XCircle className="inline w-3 h-3 mr-1" />Pending</>
-                    )}
-                  </div>
                 </div>
 
                 <div className="space-y-2 text-sm text-gray-700">
                   <div className="flex items-center">
                     <School className="w-4 h-4 mr-2 text-green-600" />
-                    <span><strong>School:</strong> {student.school_name}</span>
+                    <span><strong>{t('schoolNameLabel')}:</strong> {student.school_name}</span>
                   </div>
                   <div className="flex items-center">
                     <GraduationCap className="w-4 h-4 mr-2 text-green-600" />
-                    <span><strong>Class:</strong> {student.class}</span>
+                    <span><strong>{t('classNameLabel')}:</strong> {student.class}</span>
                   </div>
                   <div className="flex items-center">
                     <TreePine className="w-4 h-4 mr-2 text-green-600" />
-                    <span><strong>Tree:</strong> {student.name_of_tree}</span>
+                    <span><strong>{t('treeNameLabel')}:</strong> {student.name_of_tree}</span>
                   </div>
                 </div>
 
@@ -410,47 +340,22 @@ const StudentDetails: React.FC = () => {
                 <div className="mt-4 flex gap-2">
                   {student.plant_image && (
                     <button
-                      onClick={() => openImageModal(student.plant_image, `${student.name} - Plant Image`)}
+                      onClick={() => openImageModal(student.plant_image, `${student.name} - ${t('plantImageLabel')}`)}
                       className="flex items-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-xs"
                     >
                       <ImageIcon className="w-4 h-4" />
-                      Plant Image
+                      {t('plantImageLabel')}
                     </button>
                   )}
                   {student.certificate && (
                     <button
-                      onClick={() => openImageModal(student.certificate, `${student.name} - Student Photo`)}
+                      onClick={() => openImageModal(student.certificate, `${student.name} - ${t('studentPhotoLabel')}`)}
                       className="flex items-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs"
                     >
                       <Award className="w-4 h-4" />
-                      Student Photo
+                      {t('studentPhotoLabel')}
                     </button>
                   )}
-                </div>
-
-                {/* Verification Button */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => handleVerificationToggle(index, student.verified)}
-                    disabled={loading}
-                    className={`w-full py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors font-medium ${
-                      student.verified === 'true'
-                        ? 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border border-yellow-300'
-                        : 'bg-green-100 hover:bg-green-200 text-green-800 border border-green-300'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {student.verified === 'true' ? (
-                      <>
-                        <UserX className="w-4 h-4" />
-                        Mark as Unverified
-                      </>
-                    ) : (
-                      <>
-                        <UserCheck className="w-4 h-4" />
-                        Mark as Verified
-                      </>
-                    )}
-                  </button>
                 </div>
 
                 <button
@@ -458,7 +363,7 @@ const StudentDetails: React.FC = () => {
                   className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors"
                 >
                   <Eye className="w-4 h-4" />
-                  View Full Details
+                  {t('viewFullDetailsButton')}
                 </button>
               </div>
             ))}
@@ -479,7 +384,7 @@ const StudentDetails: React.FC = () => {
             {/* Header with close button */}
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-800 truncate pr-8">
-                Student Details
+                {t('studentDetailsModal')}
               </h3>
               <button
                 onClick={() => setSelectedStudent(null)}
@@ -496,7 +401,7 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-green-800">
                     <User className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-green-600 block">Student Name</span>
+                      <span className="text-xs font-medium text-green-600 block">{t('studentNameLabel')}</span>
                       <span className="text-sm font-semibold break-words">{selectedStudent.name}</span>
                     </div>
                   </div>
@@ -506,7 +411,7 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-blue-800">
                     <School className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-blue-600 block">School Name</span>
+                      <span className="text-xs font-medium text-blue-600 block">{t('schoolNameLabel')}</span>
                       <span className="text-sm font-semibold break-words">{selectedStudent.school_name}</span>
                     </div>
                   </div>
@@ -516,7 +421,7 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-purple-800">
                     <GraduationCap className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-purple-600 block">Class</span>
+                      <span className="text-xs font-medium text-purple-600 block">{t('classNameLabel')}</span>
                       <span className="text-sm font-semibold break-words">{selectedStudent.class}</span>
                     </div>
                   </div>
@@ -526,7 +431,7 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-orange-800">
                     <TreePine className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-orange-600 block">Tree Name</span>
+                      <span className="text-xs font-medium text-orange-600 block">{t('treeNameLabel')}</span>
                       <span className="text-sm font-semibold break-words">{selectedStudent.name_of_tree}</span>
                     </div>
                   </div>
@@ -536,7 +441,7 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-teal-800">
                     <Search className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-teal-600 block">UDISE Code</span>
+                      <span className="text-xs font-medium text-teal-600 block">{t('udiseCodeLabel')}</span>
                       <span className="text-sm font-semibold break-words">{selectedStudent.udise_code}</span>
                     </div>
                   </div>
@@ -546,32 +451,8 @@ const StudentDetails: React.FC = () => {
                   <div className="flex items-center text-pink-800">
                     <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-medium text-pink-600 block">Registration Date</span>
+                      <span className="text-xs font-medium text-pink-600 block">{t('registrationDateLabel')}</span>
                       <span className="text-sm font-semibold break-words">{formatDate(selectedStudent.date_time)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={`p-3 rounded-lg border-l-4 ${
-                  selectedStudent.verified === 'true' 
-                    ? 'bg-green-50 border-green-400' 
-                    : 'bg-yellow-50 border-yellow-400'
-                }`}>
-                  <div className={`flex items-center ${
-                    selectedStudent.verified === 'true' ? 'text-green-800' : 'text-yellow-800'
-                  }`}>
-                    {selectedStudent.verified === 'true' ? (
-                      <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                    ) : (
-                      <XCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <span className={`text-xs font-medium block ${
-                        selectedStudent.verified === 'true' ? 'text-green-600' : 'text-yellow-600'
-                      }`}>Verification Status</span>
-                      <span className="text-sm font-semibold break-words">
-                        {selectedStudent.verified === 'true' ? 'Verified' : 'Pending Verification'}
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -579,24 +460,24 @@ const StudentDetails: React.FC = () => {
                 {/* Document Buttons */}
                 <div className="bg-gray-50 p-3 rounded-lg border-l-4 border-gray-400">
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs font-medium text-gray-600 block mb-2">Uploaded Documents</span>
+                    <span className="text-xs font-medium text-gray-600 block mb-2">{t('uploadedDocuments')}</span>
                     <div className="flex flex-col gap-2">
                       {selectedStudent.plant_image && (
                         <button
-                          onClick={() => openImageModal(selectedStudent.plant_image, `${selectedStudent.name} - Plant Image`)}
+                          onClick={() => openImageModal(selectedStudent.plant_image, `${selectedStudent.name} - ${t('plantImageLabel')}`)}
                           className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-xs"
                         >
                           <ImageIcon className="w-3 h-3" />
-                          View Plant Image
+                          {t('viewPlantImage')}
                         </button>
                       )}
                       {selectedStudent.certificate && (
                         <button
-                          onClick={() => openImageModal(selectedStudent.certificate, `${selectedStudent.name} - Student Photo`)}
+                          onClick={() => openImageModal(selectedStudent.certificate, `${selectedStudent.name} - ${t('studentPhotoLabel')}`)}
                           className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs"
                         >
                           <Award className="w-3 h-3" />
-                          View Student Photo
+                          {t('viewStudentPhoto')}
                         </button>
                       )}
                     </div>

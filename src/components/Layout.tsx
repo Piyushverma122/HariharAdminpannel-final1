@@ -24,7 +24,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { role } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const location = useLocation();
@@ -42,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: School,
     },
     {
-      name: 'Student Details',
+      name: t('studentDetailsTitle'),
       href: '/student-details',
       icon: Users,
     },
@@ -165,8 +165,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </button>
             </div>
 
-            {/* Empty div to maintain spacing */}
-            <div></div>
+            {/* Language Toggle */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+                className="flex items-center px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-sm font-medium text-gray-700">
+                  {language === 'en' ? '🇮🇳 हिंदी' : '🇺🇸 English'}
+                </span>
+              </button>
+            </div>
           </div>
         </header>
 

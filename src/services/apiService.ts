@@ -87,7 +87,6 @@ export interface Student {
   certificate: string;
   date_time: string;
   udise_code: string;
-  verified: string;
 }
 
 // School interface (based on database schema)
@@ -211,24 +210,31 @@ export class ApiService {
   static async getDashboardStats(): Promise<{
     totalStudents: number;
     totalSchools: number;
-    verifiedStudents: number;
-    pendingStudents: number;
+    totalBlocks: number;
+    totalClusters: number;
   }> {
     try {
-      // Get all students and schools in parallel
-      const [students, schools] = await Promise.all([
-        this.getAllStudents(),
-        this.getAllSchools(),
-      ]);
+      const response = await makeApiRequest<{
+        total_students: number;
+        total_schools: number;
+        total_blocks: number;
+        total_clusters: number;
+      }>('/web_dashboard', {
+        method: 'GET',
+      });
 
-      const verifiedStudents = students.filter(student => student.verified === 'true').length;
-      const pendingStudents = students.filter(student => student.verified === 'false').length;
+      if (!response.status) {
+        throw new ApiError(response.message, 400);
+      }
 
+      // Backend returns data at root level, not nested in 'data' field
+      const data = response as any; // Cast to access root level properties
+      
       return {
-        totalStudents: students.length,
-        totalSchools: schools.length,
-        verifiedStudents,
-        pendingStudents,
+        totalStudents: data.total_students || 0,
+        totalSchools: data.total_schools || 0,
+        totalBlocks: data.total_blocks || 0,
+        totalClusters: data.total_clusters || 0,
       };
     } catch (error) {
       throw new ApiError('Failed to fetch dashboard statistics', 500, error);
@@ -239,23 +245,6 @@ export class ApiService {
   static validateUdiseCode(udiseCode: string): boolean {
     // Basic validation - adjust according to your UDISE code format
     return Boolean(udiseCode && udiseCode.trim().length > 0);
-  }
-
-  // Student Verification Management
-  static async updateStudentVerification(employeeId: string, verificationStatus: string, name?: string, udiseCode?: string): Promise<void> {
-    const response = await makeApiRequest('/update_student_verification', {
-      method: 'POST',
-      body: JSON.stringify({
-        employee_id: employeeId,
-        verified: verificationStatus,
-        name: name,
-        udise_code: udiseCode
-      }),
-    });
-
-    if (!response.status) {
-      throw new ApiError(response.message, 400);
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ApiService, ApiError, School as SchoolType } from '../services/apiService';
 import { useLanguage } from '../contexts/LanguageContext';
 import {
@@ -10,7 +10,9 @@ import {
   X,
   GraduationCap,
   Filter,
-  ChevronDown
+  ChevronDown,
+  Users,
+  Building2
 } from 'lucide-react';
 
 interface School {
@@ -29,6 +31,7 @@ interface School {
 const SchoolStats: React.FC = () => {
   const { t } = useLanguage();
   const [schools, setSchools] = useState<School[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,13 +48,19 @@ const SchoolStats: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchSchools = async () => {
+    const fetchData = async () => {
       try {
-        const fetchedSchools = await ApiService.getAllSchools();
+        // Fetch both schools and students data
+        const [fetchedSchools, fetchedStudents] = await Promise.all([
+          ApiService.getAllSchools(),
+          ApiService.getAllStudents()
+        ]);
+        
         setSchools(fetchedSchools);
+        setStudents(fetchedStudents);
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch school data:", err);
+        console.error("Failed to fetch data:", err);
         
         if (err instanceof ApiError) {
           setError(err.message);
@@ -63,7 +72,7 @@ const SchoolStats: React.FC = () => {
       }
     };
 
-    fetchSchools();
+    fetchData();
   }, [t]);
 
   const filteredSchools = schools.filter((school) => {
@@ -107,6 +116,39 @@ const SchoolStats: React.FC = () => {
     });
     setSearchTerm('');
   };
+
+  // Calculate filtered counts
+  const filteredCounts = useMemo(() => {
+    // Get unique blocks from filtered schools
+    const uniqueBlocks = new Set(
+      filteredSchools
+        .map(school => school.block_code)
+        .filter(blockCode => blockCode && blockCode.trim() !== '')
+    );
+
+    // Get unique clusters from filtered schools
+    const uniqueClusters = new Set(
+      filteredSchools
+        .map(school => school.cluster_code)
+        .filter(clusterCode => clusterCode && clusterCode.trim() !== '')
+    );
+
+    // Get unique UDISE codes from filtered schools
+    const udiseCodes = filteredSchools.map(school => school.udise_code);
+    
+    // Count students that belong to the filtered schools
+    const filteredStudentsCount = students.filter(student => 
+      udiseCodes.includes(student.udise_code)
+    ).length;
+
+    return {
+      totalBlocks: uniqueBlocks.size,
+      totalClusters: uniqueClusters.size,
+      totalSchools: filteredSchools.length,
+      totalStudents: filteredStudentsCount,
+      udiseCodes: udiseCodes
+    };
+  }, [filteredSchools, students]);
 
   return (
     <div className="p-6 space-y-6">
@@ -308,6 +350,42 @@ const SchoolStats: React.FC = () => {
             )}
           </div>
         )}
+      </div>
+
+      {/* Count Statistics Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Total Blocks */}
+        <div className="bg-white border-l-4 border-green-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 text-sm font-medium">Total Blocks</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredCounts.totalBlocks}</p>
+            </div>
+            <Building2 className="w-12 h-12 text-green-500" />
+          </div>
+        </div>
+
+        {/* Total Clusters */}
+        <div className="bg-white border-l-4 border-blue-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-600 text-sm font-medium">Total Clusters</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredCounts.totalClusters}</p>
+            </div>
+            <MapPin className="w-12 h-12 text-blue-500" />
+          </div>
+        </div>
+
+        {/* Total Students */}
+        <div className="bg-white border-l-4 border-purple-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-600 text-sm font-medium">Total Students</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredCounts.totalStudents}</p>
+            </div>
+            <Users className="w-12 h-12 text-purple-500" />
+          </div>
+        </div>
       </div>
 
       {/* Loading, Error, No Records Found States */}

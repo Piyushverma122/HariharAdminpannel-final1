@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
-  Camera,
   School,
-  Activity,
-  CheckCircle,
-  Clock,
+  Building2,
+  MapPin,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ApiService, ApiError } from '../services/apiService';
@@ -30,8 +28,8 @@ const Dashboard: React.FC = () => {
   const [statsData, setStatsData] = useState({
     totalStudents: 0,
     totalSchools: 0,
-    verifiedStudents: 0,
-    pendingStudents: 0,
+    totalBlocks: 0,
+    totalClusters: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +55,8 @@ const Dashboard: React.FC = () => {
         setStatsData({
           totalStudents: 0,
           totalSchools: 0,
-          verifiedStudents: 0,
-          pendingStudents: 0,
+          totalBlocks: 0,
+          totalClusters: 0,
         });
       } finally {
         setLoading(false);
@@ -77,48 +75,48 @@ const Dashboard: React.FC = () => {
       link: '/student-details',
     },
     {
-      name: 'Verified Students',
-      value: statsData.verifiedStudents.toString(),
-      icon: CheckCircle,
-      gradient: 'gradient-card-green',
-      link: '/student-details',
-    },
-    {
-      name: 'Pending Verification',
-      value: statsData.pendingStudents.toString(),
-      icon: Clock,
-      gradient: 'gradient-card-orange',
-      link: '/student-details',
-    },
-    {
       name: 'Total Schools',
       value: statsData.totalSchools.toString(),
       icon: School,
       gradient: 'gradient-card-purple',
       link: '/school-stats',
     },
+    {
+      name: 'Total Blocks',
+      value: statsData.totalBlocks.toString(),
+      icon: Building2,
+      gradient: 'gradient-card-green',
+      link: '/school-stats',
+    },
+    {
+      name: 'Total Clusters',
+      value: statsData.totalClusters.toString(),
+      icon: MapPin,
+      gradient: 'gradient-card-orange',
+      link: '/school-stats',
+    },
   ];
 
   const chartData = [
     {
-      name: 'Total Students',
+      name: 'Students',
       count: statsData.totalStudents,
       color: '#3b82f6' // Blue
-    },
-    {
-      name: 'Verified',
-      count: statsData.verifiedStudents,
-      color: '#22c55e' // Green
-    },
-    {
-      name: 'Pending',
-      count: statsData.pendingStudents,
-      color: '#f59e0b' // Orange
     },
     {
       name: 'Schools',
       count: statsData.totalSchools,
       color: '#a855f7' // Purple
+    },
+    {
+      name: 'Blocks',
+      count: statsData.totalBlocks,
+      color: '#22c55e' // Green
+    },
+    {
+      name: 'Clusters',
+      count: statsData.totalClusters,
+      color: '#f59e0b' // Orange
     },
   ];
 
