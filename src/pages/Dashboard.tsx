@@ -5,6 +5,7 @@ import {
   School,
   Building2,
   MapPin,
+  TreePine,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ApiService, ApiError } from '../services/apiService';
@@ -30,6 +31,7 @@ const Dashboard: React.FC = () => {
     totalSchools: 0,
     totalBlocks: 0,
     totalClusters: 0,
+  totalPlants: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +42,16 @@ const Dashboard: React.FC = () => {
       try {
         setLoading(true);
         const stats = await ApiService.getDashboardStats();
-        setStatsData(stats);
+        // Expect backend later to include total_plants; fallback compute after fetch_all_students if needed
+        let totalPlants = 0;
+        try {
+          // Attempt to fetch all students to count plant_image entries (optional extra call)
+          const students = await ApiService.getAllStudents();
+          totalPlants = students.filter(s => s.plant_image && s.plant_image.trim() !== '').length;
+        } catch (e) {
+          // ignore counting error
+        }
+        setStatsData({ ...stats, totalPlants });
         setError(null);
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -57,6 +68,7 @@ const Dashboard: React.FC = () => {
           totalSchools: 0,
           totalBlocks: 0,
           totalClusters: 0,
+          totalPlants: 0,
         });
       } finally {
         setLoading(false);
@@ -95,29 +107,21 @@ const Dashboard: React.FC = () => {
       gradient: 'gradient-card-orange',
       link: '/school-stats',
     },
+    {
+      name: 'Total Plants',
+      value: statsData.totalPlants.toString(),
+      icon: TreePine,
+  gradient: 'gradient-card-green',
+      link: '/student-details',
+    },
   ];
 
   const chartData = [
-    {
-      name: 'Students',
-      count: statsData.totalStudents,
-      color: '#3b82f6' // Blue
-    },
-    {
-      name: 'Schools',
-      count: statsData.totalSchools,
-      color: '#a855f7' // Purple
-    },
-    {
-      name: 'Blocks',
-      count: statsData.totalBlocks,
-      color: '#22c55e' // Green
-    },
-    {
-      name: 'Clusters',
-      count: statsData.totalClusters,
-      color: '#f59e0b' // Orange
-    },
+    { name: 'Students', count: statsData.totalStudents, color: '#3b82f6' },
+    { name: 'Schools', count: statsData.totalSchools, color: '#a855f7' },
+    { name: 'Blocks', count: statsData.totalBlocks, color: '#22c55e' },
+    { name: 'Clusters', count: statsData.totalClusters, color: '#f59e0b' },
+    { name: 'Plants', count: statsData.totalPlants, color: '#16a34a' },
   ];
 
   console.log("Dashboard - Chart Data for Bars (rendered):", chartData);

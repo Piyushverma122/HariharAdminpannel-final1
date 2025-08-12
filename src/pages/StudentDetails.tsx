@@ -29,6 +29,7 @@ interface Student {
   certificate: string;
   date_time: string;
   udise_code: string;
+  status: string;
 }
 
 const StudentDetails: React.FC = () => {
@@ -94,7 +95,7 @@ const StudentDetails: React.FC = () => {
 
     try {
       const fetchedStudents = await ApiService.getStudentsByUdiseCode(udiseCode.trim());
-      setStudents(fetchedStudents);
+      setStudents(fetchedStudents as Student[]);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch student data:', err);
@@ -334,6 +335,10 @@ const StudentDetails: React.FC = () => {
                     <TreePine className="w-4 h-4 mr-2 text-green-600" />
                     <span><strong>{t('treeNameLabel')}:</strong> {student.name_of_tree}</span>
                   </div>
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2 text-green-600" />
+                    <span><strong>{t('statusLabel')}:</strong> {student.status || 'No Status'}</span>
+                  </div>
                 </div>
 
                 {/* Image Buttons */}
@@ -349,11 +354,11 @@ const StudentDetails: React.FC = () => {
                   )}
                   {student.certificate && (
                     <button
-                      onClick={() => openImageModal(student.certificate, `${student.name} - ${t('studentPhotoLabel')}`)}
-                      className="flex items-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs"
+                      onClick={() => openImageModal(student.certificate, `${student.name} - Monitering Photo`)}
+                      className="flex items-center gap-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-xs"
                     >
-                      <Award className="w-4 h-4" />
-                      {t('studentPhotoLabel')}
+                      <ImageIcon className="w-4 h-4" />
+                      Monitering Photo
                     </button>
                   )}
                 </div>
@@ -457,6 +462,16 @@ const StudentDetails: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="bg-indigo-50 p-3 rounded-lg border-l-4 border-indigo-400">
+                  <div className="flex items-center text-indigo-800">
+                    <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-medium text-indigo-600 block">{t('statusLabel')}</span>
+                      <span className="text-sm font-semibold break-words">{selectedStudent.status || 'No Status'}</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Document Buttons */}
                 <div className="bg-gray-50 p-3 rounded-lg border-l-4 border-gray-400">
                   <div className="min-w-0 flex-1">
@@ -473,11 +488,11 @@ const StudentDetails: React.FC = () => {
                       )}
                       {selectedStudent.certificate && (
                         <button
-                          onClick={() => openImageModal(selectedStudent.certificate, `${selectedStudent.name} - ${t('studentPhotoLabel')}`)}
-                          className="flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs"
+                          onClick={() => openImageModal(selectedStudent.certificate, `${selectedStudent.name} - Monitering Photo`)}
+                          className="flex items-center gap-2 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-xs"
                         >
-                          <Award className="w-3 h-3" />
-                          {t('viewStudentPhoto')}
+                          <ImageIcon className="w-3 h-3" />
+                          View Monitering Photo
                         </button>
                       )}
                     </div>

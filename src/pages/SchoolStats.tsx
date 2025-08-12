@@ -12,7 +12,10 @@ import {
   Filter,
   ChevronDown,
   Users,
-  Building2
+  Building2,
+  Camera,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 
 interface School {
@@ -32,6 +35,11 @@ const SchoolStats: React.FC = () => {
   const { t } = useLanguage();
   const [schools, setSchools] = useState<School[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [reuploadStats, setReuploadStats] = useState({
+    neverReuploaded: 0,
+    pendingReupload: 0,
+    reuploadDue: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,7 +58,7 @@ const SchoolStats: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch both schools and students data
+        // Fetch schools, students, and reupload statistics
         const [fetchedSchools, fetchedStudents] = await Promise.all([
           ApiService.getAllSchools(),
           ApiService.getAllStudents()
@@ -58,6 +66,20 @@ const SchoolStats: React.FC = () => {
         
         setSchools(fetchedSchools);
         setStudents(fetchedStudents);
+        
+        // Try to fetch reupload stats, with fallback if endpoint doesn't exist
+        try {
+          const fetchedReuploadStats = await ApiService.getReuploadStats();
+          setReuploadStats(fetchedReuploadStats);
+        } catch (reuploadError) {
+          console.warn("Re-upload stats endpoint not available, using default values");
+          setReuploadStats({
+            neverReuploaded: 0,
+            pendingReupload: 0,
+            reuploadDue: 0,
+          });
+        }
+        
         setError(null);
       } catch (err) {
         console.error("Failed to fetch data:", err);
@@ -147,6 +169,51 @@ const SchoolStats: React.FC = () => {
       totalSchools: filteredSchools.length,
       totalStudents: filteredStudentsCount,
       udiseCodes: udiseCodes
+    };
+  }, [filteredSchools, students]);
+
+  // Calculate filtered re-upload statistics
+  const filteredReuploadStats = useMemo(() => {
+    // Get UDISE codes from filtered schools
+    const filteredUdiseCodes = filteredSchools.map(school => school.udise_code);
+    
+    // Filter students to only include those from filtered schools
+    const filteredStudents = students.filter(student => 
+      filteredUdiseCodes.includes(student.udise_code)
+    );
+
+    // Calculate re-upload statistics for filtered students
+    const neverReuploaded = filteredStudents.filter(student => 
+      (student.reupload_count || 0) === 0
+    ).length;
+
+    const pendingReupload = filteredStudents.filter(student => 
+      !student.certificate || student.certificate.trim() === ''
+    ).length;
+
+    const reuploadDue = filteredStudents.filter(student => {
+      const hasNoCertificate = !student.certificate || student.certificate.trim() === '';
+      const reuploadCount = student.reupload_count || 0;
+      const lastReuploadDate = student.last_reupload_date;
+      
+      // Check if last reupload was more than 4 days ago or never happened
+      let isOverdue = false;
+      if (!lastReuploadDate) {
+        isOverdue = true; // Never reuploaded
+      } else {
+        const lastDate = new Date(lastReuploadDate);
+        const fourDaysAgo = new Date();
+        fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
+        isOverdue = lastDate <= fourDaysAgo;
+      }
+      
+      return hasNoCertificate && isOverdue && reuploadCount < 6;
+    }).length;
+
+    return {
+      neverReuploaded,
+      pendingReupload,
+      reuploadDue
     };
   }, [filteredSchools, students]);
 
@@ -384,6 +451,45 @@ const SchoolStats: React.FC = () => {
               <p className="text-gray-800 text-3xl font-bold">{filteredCounts.totalStudents}</p>
             </div>
             <Users className="w-12 h-12 text-purple-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Re-upload Statistics Boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        {/* Never Re-uploaded */}
+        <div className="bg-white border-l-4 border-gray-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm font-medium">Never Re-uploaded</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredReuploadStats.neverReuploaded}</p>
+              
+            </div>
+            <Camera className="w-12 h-12 text-gray-500" />
+          </div>
+        </div>
+
+        {/* Pending Re-upload */}
+        <div className="bg-white border-l-4 border-orange-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-orange-600 text-sm font-medium">Pending Re-upload</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredReuploadStats.pendingReupload}</p>
+              <p className="text-orange-500 text-xs mt-1">upload after 30 days</p>
+            </div>
+            <Clock className="w-12 h-12 text-orange-500" />
+          </div>
+        </div>
+
+        {/* Re-upload Due */}
+        <div className="bg-white border-l-4 border-red-500 p-6 rounded-xl shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-red-600 text-sm font-medium">Re-upload Due</p>
+              <p className="text-gray-800 text-3xl font-bold">{filteredReuploadStats.reuploadDue}</p>
+              <p className="text-red-500 text-xs mt-1">upload available but not re-uploaded</p>
+            </div>
+            <AlertTriangle className="w-12 h-12 text-red-500" />
           </div>
         </div>
       </div>

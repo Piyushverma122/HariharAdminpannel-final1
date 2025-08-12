@@ -241,6 +241,37 @@ export class ApiService {
     }
   }
 
+  // Re-upload Statistics
+  static async getReuploadStats(): Promise<{
+    neverReuploaded: number;
+    pendingReupload: number;
+    reuploadDue: number;
+  }> {
+    try {
+      const response = await makeApiRequest<{
+        never_reuploaded_count: number;
+        pending_reupload_count: number;
+        reupload_due_count: number;
+      }>('/reupload_stats', {
+        method: 'GET',
+      });
+
+      if (!response.status) {
+        throw new ApiError(response.message, 400);
+      }
+
+      const data = response as any;
+      
+      return {
+        neverReuploaded: data.never_reuploaded_count || 0,
+        pendingReupload: data.pending_reupload_count || 0,
+        reuploadDue: data.reupload_due_count || 0,
+      };
+    } catch (error) {
+      throw new ApiError('Failed to fetch reupload statistics', 500, error);
+    }
+  }
+
   // Utility function to validate UDISE code format (if needed)
   static validateUdiseCode(udiseCode: string): boolean {
     // Basic validation - adjust according to your UDISE code format
